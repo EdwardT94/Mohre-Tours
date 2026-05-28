@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mohre Tours & Travel — Vehicle Booking</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #1D9E75;
+    --green-dark: #0F6E56;
+    --green-light: #E1F5EE;
+    --green-mid: #9FE1CB;
+    --gold: #C89B3C;
+    --bg: #F8F6F0;
+    --surface: #FFFFFF;
+    --text: #1A1A1A;
+    --muted: #6B6B6B;
+    --border: #E0DDD5;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    background: var(--green);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .logo-icon svg { width: 20px; height: 20px; fill: white; }
+  .logo-text { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--text); }
+  .logo-sub { font-size: 11px; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+  .header-contact { font-size: 13px; color: var(--muted); }
+  .header-contact a { color: var(--green); text-decoration: none; font-weight: 500; }
+
+  /* Layout */
+  .container { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+  /* Progress */
+  .progress-wrap {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+  .step-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+  }
+  .step-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 16px;
+    left: 60%;
+    width: 80%;
+    height: 1px;
+    background: var(--border);
+    z-index: 0;
+  }
+  .step-item.done:not(:last-child)::after { background: var(--green-mid); }
+  .step-num {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    background: var(--surface);
+    position: relative;
+    z-index: 1;
+    transition: all 0.2s;
+  }
+  .step-item.active .step-num { border-color: var(--green); color: var(--green); background: var(--green-light); }
+  .step-item.done .step-num { border-color: var(--green); background: var(--green); color: white; }
+  .step-label { font-size: 11px; color: var(--muted); text-align: center; }
+  .step-item.active .step-label { color: var(--green); font-weight: 500; }
+  .step-item.done .step-label { color: var(--green-dark); }
+
+  /* Card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+    margin-bottom: 1rem;
+  }
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    margin-bottom: 4px;
+    color: var(--text);
+  }
+  .card-sub { font-size: 13px; color: var(--muted); margin-bottom: 1.5rem; }
+
+  /* Vehicle grid */
+  .vehicle-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .vcard {
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.125rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--surface);
+    position: relative;
+  }
+  .vcard:hover { border-color: var(--green-mid); transform: translateY(-1px); }
+  .vcard.selected { border-color: var(--green); background: var(--green-light); }
+  .vcard.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 10px; right: 12px;
+    width: 22px; height: 22px;
+    background: var(--green);
+    color: white;
+    border-radius: 50%;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .vcard-icon { font-size: 32px; margin-bottom: 10px; }
+  .vcard-name { font-weight: 600; font-size: 15px; margin-bottom: 3px; }
+  .vcard-cap { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .vcard-price { font-size: 17px; font-weight: 600; color: var(--green-dark); }
+  .vcard-price span { font-size: 12px; font-weight: 400; color: var(--muted); }
+
+  /* Form */
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .form-row.full { grid-template-columns: 1fr; }
+  .form-group label { font-size: 12px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px; }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    background: var(--surface);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus { border-color: var(--green); }
+  .form-group textarea { resize: vertical; min-height: 80px; }
+
+  /* Date summary */
+  .date-info {
+    background: var(--green-light);
+    border: 1px solid var(--green-mid);
+    border-radius: var(--radius-sm);
+    padding: 1rem 1.25rem;
+    margin-top: 1rem;
+    display: none;
+  }
+  .date-info-row { display: flex; justify-content: space-between; font-size: 14px; padding: 3px 0; }
+  .date-info-row strong { color: var(--green-dark); }
+
+  /* Extras */
+  .extras-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+  .extra-item {
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: .875rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.15s;
+    background: var(--surface);
+  }
+  .extra-item:hover { border-color: var(--green-mid); }
+  .extra-item.on { border-color: var(--green); background: var(--green-light); }
+  .extra-icon { font-size: 22px; flex-shrink: 0; }
+  .extra-name { font-size: 13px; font-weight: 500; }
+  .extra-price { font-size: 12px; color: var(--muted); }
+  .extra-chk { margin-left: auto; width: 18px; height: 18px; accent-color: var(--green); flex-shrink: 0; }
+
+  /* Payment methods */
+  .pay-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 12px; }
+  .pay-card {
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    background: var(--surface);
+  }
+  .pay-card:hover { border-color: var(--green-mid); }
+  .pay-card.on { border-color: var(--green); background: var(--green-light); }
+  .pay-card .picon { font-size: 28px; margin-bottom: 6px; }
+  .pay-card .pname { font-size: 13px; font-weight: 500; }
+
+  /* Summary */
+  .order-summary { background: var(--bg); border-radius: var(--radius-sm); padding: 1.125rem; }
+  .sum-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 14px; border-bottom: 1px solid var(--border); }
+  .sum-row:last-child { border: none; }
+  .sum-row.total { font-size: 17px; font-weight: 600; color: var(--green-dark); padding-top: 10px; }
+  .sum-section { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); padding: 12px 0 4px; }
+
+  /* Buttons */
+  .btn-wrap { display: flex; gap: 10px; margin-top: 1.5rem; }
+  .btn-primary {
+    flex: 1;
+    padding: 12px 24px;
+    background: var(--green);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    letter-spacing: 0.02em;
+  }
+  .btn-primary:hover { background: var(--green-dark); }
+  .btn-back {
+    padding: 12px 20px;
+    background: transparent;
+    color: var(--muted);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-back:hover { border-color: var(--green); color: var(--green); }
+
+  /* Error */
+  .err { font-size: 12px; color: #C0392B; margin-top: 8px; display: none; }
+
+  /* Confirmation */
+  .confirm-wrap { text-align: center; padding: 2rem 1rem; }
+  .confirm-icon {
+    width: 72px; height: 72px;
+    background: var(--green-light);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.25rem;
+    font-size: 36px;
+  }
+  .confirm-title { font-family: 'Playfair Display', serif; font-size: 26px; margin-bottom: 6px; }
+  .confirm-sub { font-size: 14px; color: var(--muted); margin-bottom: 1.25rem; }
+  .ref-badge {
+    display: inline-block;
+    background: var(--green);
+    color: white;
+    font-size: 18px;
+    font-weight: 600;
+    padding: 10px 28px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.06em;
+  }
+  .confirm-note { font-size: 13px; color: var(--muted); margin-top: 1rem; line-height: 1.6; }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    header { padding: 0 1rem; }
+    .header-contact { display: none; }
+    .container { padding: 1rem; }
+    .card { padding: 1.25rem; }
+    .form-row { grid-template-columns: 1fr; }
+    .progress-wrap { padding: 1rem; }
+    .step-label { font-size: 10px; }
+  }
+
+  .screen { display: none; }
+  .screen.active { display: block; }
+  .fade-in { animation: fadeIn 0.25s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+    </div>
+    <div>
+      <div class="logo-text">Mohre Tours & Travel</div>
+      <div class="logo-sub">Vehicle Booking</div>
+    </div>
+  </div>
+  <div class="header-contact">📞 <a href="tel:+254700000000">+254 700 000 000</a></div>
+</header>
+
+<div class="container">
+
+  <!-- Progress -->
+  <div class="progress-wrap">
+    <div class="step-item active" id="st0"><div class="step-num">1</div><div class="step-label">Vehicle</div></div>
+    <div class="step-item" id="st1"><div class="step-num">2</div><div class="step-label">Dates</div></div>
+    <div class="step-item" id="st2"><div class="step-num">3</div><div class="step-label">Extras</div></div>
+    <div class="step-item" id="st3"><div class="step-num">4</div><div class="step-label">Details</div></div>
+    <div class="step-item" id="st4"><div class="step-num">5</div><div class="step-label">Pay</div></div>
+  </div>
+
+  <!-- Step 1: Vehicle -->
+  <div id="s0" class="screen active fade-in">
+    <div class="card">
+      <div class="card-title">Choose your vehicle</div>
+      <div class="card-sub">All vehicles come with comprehensive insurance coverage.</div>
+      <div class="vehicle-grid" id="vgrid"></div>
+      <div class="err" id="verr">Please select a vehicle to continue.</div>
+    </div>
+    <div class="btn-wrap"><button class="btn-primary" onclick="next(0)">Continue →</button></div>
+  </div>
+
+  <!-- Step 2: Dates -->
+  <div id="s1" class="screen">
+    <div class="card">
+      <div class="card-title">Pick-up & return dates</div>
+      <div class="card-sub">Select your preferred travel dates below.</div>
+      <div class="form-row">
+        <div class="form-group"><label>Pick-up date</label><input type="date" id="pickup" oninput="calcDays()"></div>
+        <div class="form-group"><label>Return date</label><input type="date" id="returndt" oninput="calcDays()"></div>
+      </div>
+      <div class="date-info" id="dateinfo">
+        <div class="date-info-row"><span>Duration</span><strong id="ddays">—</strong></div>
+        <div class="date-info-row"><span>Vehicle rate</span><strong id="dvrate">—</strong></div>
+        <div class="date-info-row"><span>Vehicle subtotal</span><strong id="dsub">—</strong></div>
+      </div>
+      <div class="err" id="derr">Please select valid dates (return must be after pick-up).</div>
+    </div>
+    <div class="btn-wrap">
+      <button class="btn-back" onclick="prev(1)">← Back</button>
+      <button class="btn-primary" onclick="next(1)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- Step 3: Extras -->
+  <div id="s2" class="screen">
+    <div class="card">
+      <div class="card-title">Add extras</div>
+      <div class="card-sub">Enhance your trip with these optional add-ons.</div>
+      <div class="extras-grid" id="egrid"></div>
+    </div>
+    <div class="btn-wrap">
+      <button class="btn-back" onclick="prev(2)">← Back</button>
+      <button class="btn-primary" onclick="next(2)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- Step 4: Details -->
+  <div id="s3" class="screen">
+    <div class="card">
+      <div class="card-title">Your details</div>
+      <div class="card-sub">Please fill in your personal information to complete the booking.</div>
+      <div class="form-row">
+        <div class="form-group"><label>Full name *</label><input type="text" id="fname" placeholder="John Kamau"></div>
+        <div class="form-group"><label>Phone number *</label><input type="tel" id="fphone" placeholder="+254 700 000 000"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Email address *</label><input type="email" id="femail" placeholder="john@email.com"></div>
+        <div class="form-group"><label>ID / Passport no. *</label><input type="text" id="fid" placeholder="A12345678"></div>
+      </div>
+      <div class="form-row full">
+        <div class="form-group"><label>Special requests</label><textarea id="fnotes" placeholder="Any special requirements, pickup location, or notes..."></textarea></div>
+      </div>
+      <div class="err" id="ferr">Please fill in all required fields (*) to continue.</div>
+    </div>
+    <div class="btn-wrap">
+      <button class="btn-back" onclick="prev(3)">← Back</button>
+      <button class="btn-primary" onclick="next(3)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- Step 5: Pay -->
+  <div id="s4" class="screen">
+    <div class="card">
+      <div class="card-title">Order summary</div>
+      <div class="card-sub">Review your booking before confirming.</div>
+      <div class="order-summary" id="ordersum"></div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="font-size:17px">Select payment method</div>
+      <div class="pay-grid" id="paygrid"></div>
+      <div class="err" id="perr">Please select a payment method.</div>
+    </div>
+    <div class="btn-wrap">
+      <button class="btn-back" onclick="prev(4)">← Back</button>
+      <button class="btn-primary" onclick="confirm()">✓ Confirm booking</button>
+    </div>
+  </div>
+
+  <!-- Confirmation -->
+  <div id="s5" class="screen">
+    <div class="card">
+      <div class="confirm-wrap">
+        <div class="confirm-icon">✅</div>
+        <div class="confirm-title">Booking Confirmed!</div>
+        <div class="confirm-sub">Your booking reference number</div>
+        <div class="ref-badge" id="refcode">MTT-000000</div>
+        <div class="order-summary" id="confirmsum" style="text-align:left"></div>
+        <p class="confirm-note">A confirmation SMS and email will be sent to your provided contacts.<br>Our team will reach out within 30 minutes to finalize your booking.</p>
+        <div class="btn-wrap" style="justify-content:center;margin-top:1.5rem">
+          <button class="btn-primary" style="max-width:200px" onclick="reset()">New booking</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const vehicles=[
+  {id:'lc',name:'Land Cruiser',cap:'7 seats',price:12000,icon:'🚙'},
+  {id:'mb',name:'Minibus',cap:'14 seats',price:9500,icon:'🚌'},
+  {id:'sd',name:'Sedan',cap:'4 seats',price:5500,icon:'🚗'},
+  {id:'co',name:'Coaster',cap:'29 seats',price:15000,icon:'🚎'},
+  {id:'pk',name:'Pickup',cap:'5 seats',price:7000,icon:'🛻'},
+  {id:'ls',name:'Luxury SUV',cap:'6 seats',price:18000,icon:'🚐'},
+];
+const extras=[
+  {id:'driver',name:'Driver',price:2500,icon:'🧑‍✈️',per:'day'},
+  {id:'guide',name:'Tour guide',price:3000,icon:'🧭',per:'day'},
+  {id:'fuel',name:'Fuel package',price:5000,icon:'⛽',per:'trip'},
+  {id:'ins',name:'Insurance',price:1500,icon:'🛡️',per:'day'},
+  {id:'wifi',name:'WiFi hotspot',price:800,icon:'📶',per:'day'},
+  {id:'cool',name:'Cooler box',price:500,icon:'🧊',per:'trip'},
+];
+const payMethods=[
+  {id:'mpesa',name:'M-Pesa',icon:'📱'},
+  {id:'card',name:'Card',icon:'💳'},
+  {id:'bank',name:'Bank transfer',icon:'🏦'},
+  {id:'cash',name:'Cash',icon:'💵'},
+];
+
+let S={vehicle:null,pickup:'',returndt:'',days:0,extras:[],name:'',phone:'',email:'',idno:'',notes:'',pay:null};
+
+const fmt=n=>'KSh '+parseInt(n).toLocaleString();
+
+function buildVehicles(){
+  document.getElementById('vgrid').innerHTML=vehicles.map(v=>`
+    <div class="vcard${S.vehicle===v.id?' selected':''}" onclick="selV('${v.id}')">
+      <div class="vcard-icon">${v.icon}</div>
+      <div class="vcard-name">${v.name}</div>
+      <div class="vcard-cap">👥 ${v.cap}</div>
+      <div class="vcard-price">${fmt(v.price)} <span>/ day</span></div>
+    </div>`).join('');
+}
+
+function buildExtras(){
+  document.getElementById('egrid').innerHTML=extras.map(e=>`
+    <div class="extra-item${S.extras.includes(e.id)?' on':''}" onclick="togE('${e.id}')">
+      <span class="extra-icon">${e.icon}</span>
+      <div><div class="extra-name">${e.name}</div><div class="extra-price">${fmt(e.price)} / ${e.per}</div></div>
+      <input type="checkbox" class="extra-chk" ${S.extras.includes(e.id)?'checked':''} onclick="event.stopPropagation();togE('${e.id}')">
+    </div>`).join('');
+}
+
+function buildPay(){
+  document.getElementById('paygrid').innerHTML=payMethods.map(p=>`
+    <div class="pay-card${S.pay===p.id?' on':''}" onclick="selP('${p.id}')">
+      <div class="picon">${p.icon}</div>
+      <div class="pname">${p.name}</div>
+    </div>`).join('');
+}
+
+function buildSummary(elId){
+  const v=vehicles.find(x=>x.id===S.vehicle);
+  let html=`<div class="sum-section">Vehicle</div>
+    <div class="sum-row"><span>${v?v.name:'—'}</span><span>${fmt((v?v.price:0)*S.days)}</span></div>
+    <div class="sum-row"><span style="color:var(--muted);font-size:13px">${S.days} day${S.days!==1?'s':''} × ${fmt(v?v.price:0)}/day</span><span></span></div>`;
+  let extT=0;
+  if(S.extras.length){
+    html+=`<div class="sum-section">Extras</div>`;
+    S.extras.forEach(eid=>{
+      const e=extras.find(x=>x.id===eid);
+      if(!e)return;
+      const amt=e.per==='day'?e.price*S.days:e.price;
+      extT+=amt;
+      html+=`<div class="sum-row"><span>${e.name}</span><span>${fmt(amt)}</span></div>`;
+    });
+  }
+  const grand=(v?v.price:0)*S.days+extT;
+  html+=`<div class="sum-row total"><span>Grand total</span><span>${fmt(grand)}</span></div>`;
+  document.getElementById(elId).innerHTML=html;
+  return grand;
+}
+
+function selV(id){S.vehicle=id;buildVehicles();}
+function togE(id){const i=S.extras.indexOf(id);i>-1?S.extras.splice(i,1):S.extras.push(id);buildExtras();}
+function selP(id){S.pay=id;buildPay();}
+
+function calcDays(){
+  const p=document.getElementById('pickup').value;
+  const r=document.getElementById('returndt').value;
+  if(!p||!r)return;
+  const d=Math.round((new Date(r)-new Date(p))/(86400000));
+  if(d<=0){document.getElementById('dateinfo').style.display='none';return;}
+  S.pickup=p;S.returndt=r;S.days=d;
+  const v=vehicles.find(x=>x.id===S.vehicle);
+  document.getElementById('ddays').textContent=d+' day'+(d!==1?'s':'');
+  document.getElementById('dvrate').textContent=v?fmt(v.price)+'/day':'—';
+  document.getElementById('dsub').textContent=v?fmt(v.price*d):'—';
+  document.getElementById('dateinfo').style.display='block';
+}
+
+function setStep(n){
+  for(let i=0;i<6;i++){
+    const sc=document.getElementById('s'+i);
+    const st=document.getElementById('st'+i);
+    if(sc)sc.classList.toggle('active',i===n);
+    if(st){st.classList.remove('active','done');if(i===n)st.classList.add('active');else if(i<n)st.classList.add('done');}
+  }
+  document.querySelector('.screen.active').classList.add('fade-in');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function next(from){
+  if(from===0){
+    if(!S.vehicle){show('verr');return;}hide('verr');setStep(1);
+    const t=new Date().toISOString().split('T')[0];
+    document.getElementById('pickup').min=t;document.getElementById('returndt').min=t;
+    if(S.pickup)document.getElementById('pickup').value=S.pickup;
+    if(S.returndt)document.getElementById('returndt').value=S.returndt;
+    calcDays();
+  } else if(from===1){
+    const p=document.getElementById('pickup').value;
+    const r=document.getElementById('returndt').value;
+    const d=Math.round((new Date(r)-new Date(p))/86400000);
+    if(!p||!r||d<=0){show('derr');return;}hide('derr');
+    S.pickup=p;S.returndt=r;S.days=d;setStep(2);buildExtras();
+  } else if(from===2){
+    setStep(3);
+  } else if(from===3){
+    const n=document.getElementById('fname').value.trim();
+    const ph=document.getElementById('fphone').value.trim();
+    const em=document.getElementById('femail').value.trim();
+    const id=document.getElementById('fid').value.trim();
+    if(!n||!ph||!em||!id){show('ferr');return;}hide('ferr');
+    S.name=n;S.phone=ph;S.email=em;S.idno=id;S.notes=document.getElementById('fnotes').value.trim();
+    setStep(4);buildSummary('ordersum');buildPay();
+  }
+}
+
+function prev(from){setStep(from-1);}
+
+function confirm(){
+  if(!S.pay){show('perr');return;}hide('perr');
+  const ref='MTT-'+Math.floor(100000+Math.random()*900000);
+  document.getElementById('refcode').textContent=ref;
+  buildSummary('confirmsum');
+  const el=document.getElementById('confirmsum');
+  const pm=payMethods.find(p=>p.id===S.pay);
+  const info=`<div class="sum-section">Booking info</div>
+    <div class="sum-row"><span>Reference</span><span style="font-weight:600;color:var(--green-dark)">${ref}</span></div>
+    <div class="sum-row"><span>Customer</span><span>${S.name}</span></div>
+    <div class="sum-row"><span>Phone</span><span>${S.phone}</span></div>
+    <div class="sum-row"><span>Email</span><span>${S.email}</span></div>
+    <div class="sum-row"><span>ID / Passport</span><span>${S.idno}</span></div>
+    <div class="sum-row"><span>Pick-up</span><span>${S.pickup}</span></div>
+    <div class="sum-row"><span>Return</span><span>${S.returndt}</span></div>
+    <div class="sum-row"><span>Payment</span><span>${pm?pm.name:''}</span></div>`;
+  el.innerHTML=info+el.innerHTML;
+  setStep(5);
+  document.querySelectorAll('.step-item').forEach(s=>s.classList.add('done'));
+}
+
+function reset(){
+  S={vehicle:null,pickup:'',returndt:'',days:0,extras:[],name:'',phone:'',email:'',idno:'',notes:'',pay:null};
+  ['fname','fphone','femail','fid','fnotes'].forEach(id=>{document.getElementById(id).value='';});
+  setStep(0);buildVehicles();
+}
+
+function show(id){document.getElementById(id).style.display='block';}
+function hide(id){document.getElementById(id).style.display='none';}
+
+buildVehicles();
+</script>
+</body>
+</html>
